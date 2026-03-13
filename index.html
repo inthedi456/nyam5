@@ -1,38 +1,314 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>[통합본] K-축산지능화 AX 관제 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #f1f5f9; margin: 0; overflow: hidden; touch-action: manipulation; }
+        /* 사이드바 애니메이션 */
+        .sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); position: fixed; height: 100vh; }
+            .sidebar.open { transform: translateX(0); }
+        }
+
+        .sidebar-item { transition: all 0.2s ease; border: 1px solid transparent; }
+        .sidebar-item.active { background: #1e40af; color: white; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3); border: 1px solid #3b82f6; }
+        /* 모바일 텍스트 세로 방지 및 레이아웃 */
+        .prevent-vertical { word-break: keep-all; white-space: normal; }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
 </head>
-<body>
-    <header>
-        <h1>Dashboard</h1>
-        <nav>
-            <ul>
-                <li><a href="#section1">Section 1</a></li>
-                <li><a href="#section2">Section 2</a></li>
-                <li><a href="#section3">Section 3</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="section1" class="responsive-section">
-            <h2>Improved Mobile Responsiveness</h2>
-            <p>Content and layout have been optimized for mobile viewing.</p>
-        </section>
-        <section id="section2" class="responsive-section">
-            <h2>Updated Styling</h2>
-            <p>Look and feel have been enhanced for better user experience.</p>
-        </section>
-        <section id="section3" class="responsive-section">
-            <h2>Enhanced Infrastructure View</h2>
-            <p>This section provides a clearer overview of the infrastructure.</p>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2026 Your Company</p>
-    </footer>
+<body class="text-slate-800">
+
+    <div class="flex h-screen w-full relative overflow-hidden">
+        
+        <!-- 모바일 사이드바 배경 -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-[90] hidden lg:hidden backdrop-blur-sm"></div>
+
+        <!-- 사이드바 -->
+        <aside id="sidebar" class="sidebar w-[280px] bg-[#0f172a] text-slate-300 flex flex-col shrink-0 shadow-2xl">
+            <div class="p-8 pb-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Emblem_of_the_Government_of_the_Republic_of_Korea.svg/200px-Emblem_of_the_Government_of_the_Republic_of_Korea.svg.png" alt="정부로고" class="w-8 h-8 filter brightness-200 grayscale">
+                    <div>
+                        <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest leading-none">국가인공지능전략위원회</p>
+                        <h1 class="text-white font-black text-sm tracking-tight mt-1">인공지능 행동계획</h1>
+                    </div>
+                </div>
+                <div class="bg-blue-600/20 border border-blue-500/30 p-3 rounded-xl">
+                    <p class="text-[11px] font-bold text-blue-300 leading-relaxed prevent-vertical">
+                        <i class="fa-solid fa-quote-left mr-1"></i>제2정책축: 산업 AX (2026~2028)
+                    </p>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto custom-scroll">
+                <div class="text-[10px] font-black text-slate-500 px-3 mb-2 uppercase tracking-widest">분야별 모니터링</div>
+                <button onclick="switchView('view-dashboard', this)" class="w-full sidebar-item active flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-left">
+                    <i class="fa-solid fa-chart-line w-5"></i> [산업 AX] 생산성 관제
+                </button>
+                <button onclick="switchView('view-edge', this)" class="w-full sidebar-item flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-left">
+                    <i class="fa-solid fa-microchip w-5"></i> 엣지(Edge) 질병 예찰
+                </button>
+                <button onclick="switchView('view-infrastructure', this)" class="w-full sidebar-item flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-left">
+                    <i class="fa-solid fa-network-wired w-5"></i> AI 고속도로 인프라
+                </button>
+            </nav>
+
+            <div class="p-6 mt-auto">
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Data Hub</span>
+                        <span class="flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> LIVE
+                        </span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 prevent-vertical">축산과학부 연구망 실시간 연동</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="flex-1 flex flex-col h-full min-w-0 bg-[#f8fafc]">
+            
+            <!-- 헤더 -->
+            <header class="h-16 lg:h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 lg:px-10 shrink-0 z-50">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl text-slate-600 shadow-sm">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2 id="header-title" class="text-base lg:text-xl font-black text-slate-900 tracking-tight prevent-vertical">산업 AX K-축산지능화 관제</h2>
+                        <p class="text-[9px] lg:text-[11px] font-bold text-blue-600">국가 인공지능 성장엔진 프로젝트</p>
+                    </div>
+                </div>
+                <div class="bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100 hidden sm:flex items-center gap-2">
+                    <div class="text-right">
+                        <p class="text-[9px] font-black text-blue-400 leading-none">연계 전공</p>
+                        <p class="text-[11px] font-black text-blue-800 mt-1">축산과학부</p>
+                    </div>
+                    <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-flask"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 스크롤 내용 -->
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8 custom-scroll">
+                
+                <!-- VIEW 1: 대시보드 -->
+                <div id="view-dashboard" class="tab-view fade-in space-y-4 lg:space-y-6 block">
+                    <div class="bg-white border-l-4 border-blue-600 p-4 rounded-r-2xl shadow-sm flex items-start gap-3">
+                        <i class="fa-solid fa-info-circle text-blue-600 mt-0.5"></i>
+                        <p class="text-[11px] lg:text-xs text-slate-600 font-medium leading-relaxed prevent-vertical">
+                            "AI를 새로운 국가 성장엔진으로 삼아 축산 산업의 AX를 추진하고 전 산업의 지능화 혁신을 도모합니다." (행동계획 PDF 참조)
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase mb-1">AX 보급 농가</p>
+                            <div class="flex items-baseline gap-1"><span id="stat-farms" class="text-3xl font-black text-slate-800 tracking-tighter">4,280</span><span class="text-xs font-bold text-slate-400">호</span></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-blue-100 bg-blue-50/20 shadow-sm">
+                            <p class="text-[10px] font-black text-blue-500 uppercase mb-1">사료 효율 개선</p>
+                            <div class="flex items-baseline gap-1"><span id="stat-efficiency" class="text-3xl font-black text-blue-600 tracking-tighter">18.5</span><span class="text-xs font-bold text-blue-400">%</span></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-black text-emerald-600 uppercase mb-1">폐사율 감소</p>
+                            <div class="flex items-baseline gap-1"><span class="text-3xl font-black text-emerald-600 tracking-tighter">-32.4</span><span class="text-xs font-bold text-slate-400">%p</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 lg:p-7 rounded-3xl border border-slate-200 shadow-sm">
+                        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                            <h3 class="text-sm lg:text-base font-black text-slate-800 italic">2026-2028 로드맵 시뮬레이션</h3>
+                            <div class="flex bg-slate-100 p-1 rounded-xl w-full lg:w-auto" id="year-buttons">
+                                <button onclick="updateChartData('2026', this)" class="flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold bg-white shadow text-blue-600 transition-all">2026년</button>
+                                <button onclick="updateChartData('2027', this)" class="flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700">2027년</button>
+                                <button onclick="updateChartData('2028', this)" class="flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700">2028년</button>
+                            </div>
+                        </div>
+                        <div class="h-[280px] lg:h-[350px] w-full"><canvas id="axTargetChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: 엣지 예찰 -->
+                <div id="view-edge" class="tab-view fade-in space-y-6 hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white p-5 rounded-3xl border border-slate-200">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xs lg:text-sm font-black text-slate-800 flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> 실시간 엣지 노드 데이터
+                                </h3>
+                                <button onclick="triggerDiseaseEvent()" class="px-4 py-1.5 bg-red-600 text-white rounded-lg text-[10px] font-bold shadow-lg shadow-red-200">테스트 발생</button>
+                            </div>
+                            <div class="h-[280px] lg:h-[320px] w-full"><canvas id="edgeStreamChart"></canvas></div>
+                        </div>
+                        <div class="bg-slate-900 p-8 rounded-3xl text-white shadow-xl flex flex-col justify-center relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl"><i class="fa-solid fa-brain"></i></div>
+                            <div id="ai-status-box" class="text-center p-8 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl transition-all">
+                                <i id="ai-status-icon" class="fa-solid fa-shield-check text-5xl text-emerald-400 mb-4 block"></i>
+                                <h2 id="ai-status-text" class="text-2xl font-black text-emerald-400">정상 (Safe)</h2>
+                                <p id="ai-status-desc" class="text-[11px] text-slate-400 mt-2 font-medium prevent-vertical italic">실시간 개체 이상 징후 없음</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: AI 고속도리 -->
+                <div id="view-infrastructure" class="tab-view fade-in hidden space-y-6">
+                    <div class="bg-white p-6 lg:p-10 rounded-3xl border border-slate-200 shadow-sm text-center">
+                        <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-4xl mb-6 mx-auto shadow-inner border border-indigo-100">
+                            <i class="fa-solid fa-network-wired"></i>
+                        </div>
+                        <h2 class="text-xl lg:text-2xl font-black text-slate-800 mb-3 prevent-vertical">AI 고속도로 백본망 연동</h2>
+                        <p class="text-xs lg:text-sm text-slate-500 max-w-xl mx-auto mb-10 prevent-vertical leading-relaxed">
+                            축산과학부 연구망은 국가 AI 고속도로 인프라와 연결되어 초저지연 데이터 전송 및 고성능 컴퓨팅 자원을 활용합니다. (PDF 핵심 인프라 파트)
+                        </p>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 max-w-4xl mx-auto text-left">
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">분석 모델</p>
+                                <p class="text-sm lg:text-base font-black text-slate-800">K-AX v2.4</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">데이터량</p>
+                                <p class="text-sm lg:text-base font-black text-slate-800">45.2 TB</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">보안 인증</p>
+                                <p class="text-sm lg:text-base font-black text-emerald-600">CSAP 인증</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">대역폭</p>
+                                <p class="text-sm lg:text-base font-black text-slate-800">100 Gbps</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-indigo-600 rounded-3xl p-6 lg:p-8 text-white flex flex-col lg:flex-row items-center justify-between gap-6">
+                        <div class="text-center lg:text-left">
+                            <h4 class="text-lg font-black mb-2">국가 AI 컴퓨팅 인프라 활용</h4>
+                            <p class="text-xs opacity-80 leading-relaxed prevent-vertical max-w-lg">
+                                대규모 언어 모델(LLM) 기반의 가축 질병 진단 및 사양 관리 챗봇 서비스가 
+                                국가 AI 고속도로를 통해 실시간으로 농가에 제공됩니다.
+                            </p>
+                        </div>
+                        <button class="px-8 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs shadow-xl active:scale-95 transition-all">연동 상세 확인</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('hidden');
+        }
+
+        const titles = {
+            'view-dashboard': 'K-축산지능화 관제',
+            'view-edge': '엣지 질병 예찰',
+            'view-infrastructure': 'AI 고속도로 인프라'
+        };
+
+        function switchView(viewId, btn) {
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('header-title').innerText = titles[viewId];
+            document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+            if(window.innerWidth < 1024) toggleSidebar();
+        }
+
+        let axChart, edgeChart, isDiseaseEvent = false;
+        const c = { blue: '#2563eb', emerald: '#10b981', red: '#ef4444', indigo: '#4f46e5' };
+        const dataSet = {
+            '2026': { adoption: [1200, 1500, 2100, 4280], productivity: [5, 8, 12, 18.5] },
+            '2027': { adoption: [5000, 6200, 7500, 9000], productivity: [19, 21, 23, 26.5] },
+            '2028': { adoption: [10000, 11500, 13000, 15000], productivity: [28, 30, 32, 35.0] }
+        };
+
+        function init() {
+            Chart.defaults.font.family = 'Pretendard';
+            Chart.defaults.font.weight = '600';
+
+            axChart = new Chart(document.getElementById('axTargetChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['1Q','2Q','3Q','4Q'],
+                    datasets: [
+                        { label: '보급 농가', data: dataSet['2026'].adoption, backgroundColor: c.blue, borderRadius: 5, yAxisID: 'y' },
+                        { label: '향상률(%)', data: dataSet['2026'].productivity, borderColor: c.emerald, type: 'line', tension: 0.4, yAxisID: 'y1' }
+                    ]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { ticks: { font: { size: 10 } } },
+                        y1: { position: 'right', grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+
+            edgeChart = new Chart(document.getElementById('edgeStreamChart'), {
+                type: 'line',
+                data: { labels: Array.from({length:20}, (_,i)=>`-${20-i}s`), datasets: [{ data: Array.from({length:20}, ()=>38.5), borderColor: c.indigo, fill: true, backgroundColor: 'rgba(79, 70, 229, 0.05)', tension: 0.4, pointRadius: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { min: 37, max: 41 }, x: { display: false } } }
+            });
+
+            setInterval(() => {
+                edgeChart.data.datasets[0].data.shift();
+                const temp = isDiseaseEvent ? 40 + Math.random() : 38.5 + (Math.random()*0.3-0.15);
+                edgeChart.data.datasets[0].data.push(temp);
+                edgeChart.update();
+            }, 800);
+        }
+
+        function updateChartData(year, btn) {
+            document.querySelectorAll('#year-buttons button').forEach(b => { b.className = "flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700"; });
+            btn.className = "flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold bg-white shadow text-blue-600";
+            document.getElementById('stat-farms').innerText = dataSet[year].adoption[3].toLocaleString();
+            document.getElementById('stat-efficiency').innerText = dataSet[year].productivity[3];
+            axChart.data.datasets[0].data = dataSet[year].adoption;
+            axChart.data.datasets[1].data = dataSet[year].productivity;
+            axChart.update();
+        }
+
+        function triggerDiseaseEvent() {
+            isDiseaseEvent = true;
+            edgeChart.data.datasets[0].borderColor = c.red;
+            const box = document.getElementById('ai-status-box');
+            box.className = "text-center p-8 bg-red-500/20 border border-red-500/50 rounded-2xl animate-pulse";
+            document.getElementById('ai-status-icon').className = "fa-solid fa-triangle-exclamation text-5xl text-red-500 mb-4 block";
+            document.getElementById('ai-status-text').innerText = "주의 (Warning)";
+            document.getElementById('ai-status-text').className = "text-2xl font-black text-red-500";
+            setTimeout(() => {
+                isDiseaseEvent = false;
+                edgeChart.data.datasets[0].borderColor = c.indigo;
+                box.className = "text-center p-8 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl transition-all";
+                document.getElementById('ai-status-icon').className = "fa-solid fa-shield-check text-5xl text-emerald-400 mb-4 block";
+                document.getElementById('ai-status-text').innerText = "정상 (Safe)";
+                document.getElementById('ai-status-text').className = "text-2xl font-black text-emerald-400";
+            }, 5000);
+        }
+
+        window.onload = init;
+    </script>
 </body>
 </html>
