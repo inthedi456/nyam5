@@ -104,15 +104,17 @@
                             <div class="flex items-baseline justify-center lg:justify-start gap-1"><span class="text-3xl font-black text-emerald-600 tracking-tighter">-32.4</span><span class="text-xs font-bold text-slate-400">%p</span></div>
                         </div>
                     </div>
-                    
+
+                    <!-- [복구됨] 연도 선택 버튼 상단 박스 -->
                     <div class="bg-white p-5 lg:p-7 rounded-3xl border border-slate-200 shadow-sm">
-                        <!-- 살려낸 연도 선택 그래프 상단부 -->
                         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
-                            <h3 class="text-sm lg:text-base font-black text-slate-800 italic">2026-2028 로드맵 시뮬레이션</h3>
-                            <div class="flex bg-slate-100 p-1 rounded-xl w-full lg:w-auto" id="year-buttons">
-                                <button onclick="updateChartData('2026', this)" class="flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold bg-white shadow text-blue-600 transition-all">2026년</button>
-                                <button onclick="updateChartData('2027', this)" class="flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition-all">2027년</button>
-                                <button onclick="updateChartData('2028', this)" class="flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition-all">2028년</button>
+                            <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-days text-blue-500"></i> 로드맵 시뮬레이션
+                            </h3>
+                            <div class="flex bg-slate-100 p-1 rounded-xl w-full lg:w-64" id="year-buttons">
+                                <button onclick="updateChartData('2026', this)" class="year-btn flex-1 py-1.5 rounded-lg text-[10px] font-bold bg-white shadow text-blue-600">2026년</button>
+                                <button onclick="updateChartData('2027', this)" class="year-btn flex-1 py-1.5 rounded-lg text-[10px] font-bold text-slate-500">2027년</button>
+                                <button onclick="updateChartData('2028', this)" class="year-btn flex-1 py-1.5 rounded-lg text-[10px] font-bold text-slate-500">2028년</button>
                             </div>
                         </div>
                         <div class="h-[300px] lg:h-[400px] w-full"><canvas id="axTargetChart"></canvas></div>
@@ -151,7 +153,9 @@
                         <p class="text-xs lg:text-sm text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed prevent-vertical">
                             축산과학부 연구망은 국가 AI 고속도로 인프라와 연결되어 초저지연 데이터 전송 및 고성능 컴퓨팅 자원을 활용합니다.
                         </p>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 max-w-4xl mx-auto text-left mb-10">
+                        
+                        <!-- 중앙 정보 그리드 -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 max-w-4xl mx-auto text-left mb-8">
                             <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">분석 모델</p>
                                 <p class="text-sm lg:text-base font-black text-slate-800">K-AX v2.4</p>
@@ -170,16 +174,18 @@
                             </div>
                         </div>
 
-                        <!-- 살려낸 하단 상세 카드 -->
-                        <div class="bg-indigo-600 rounded-3xl p-6 lg:p-8 text-white flex flex-col lg:flex-row items-center justify-between gap-6 text-left">
+                        <!-- [복구됨] 하단 정보 상자 -->
+                        <div class="bg-indigo-600 rounded-3xl p-6 lg:p-8 text-white flex flex-col lg:flex-row items-center justify-between gap-6 text-left shadow-xl shadow-indigo-100">
                             <div>
-                                <h4 class="text-lg font-black mb-2">국가 AI 컴퓨팅 인프라 활용</h4>
+                                <h4 class="text-lg font-black mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-info"></i> 국가 AI 컴퓨팅 인프라 활용
+                                </h4>
                                 <p class="text-xs opacity-80 leading-relaxed prevent-vertical max-w-lg">
-                                    대규모 언어 모델(LLM) 기반의 가축 질병 진단 및 사양 관리 챗봇 서비스가 
-                                    국가 AI 고속도로를 통해 실시간으로 농가에 제공됩니다.
+                                    대규모 언어 모델(LLM) 기반 가축 진단 및 AI 챗봇 서비스가 국가 고속도로망을 통해 
+                                    전국 농가에 초저지연으로 보급됩니다.
                                 </p>
                             </div>
-                            <button class="shrink-0 px-8 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs shadow-xl active:scale-95 transition-all">연동 상세 확인</button>
+                            <button class="shrink-0 px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs hover:bg-slate-100 transition-all active:scale-95">자세히 보기</button>
                         </div>
                     </div>
                 </div>
@@ -209,12 +215,12 @@
 
         let axChart, edgeChart, isDiseaseEvent = false;
         const c = { blue: '#2563eb', emerald: '#10b981', red: '#ef4444', indigo: '#4f46e5' };
-        
-        // 연도별 데이터 세트
-        const dataSet = {
-            '2026': { adoption: [1200, 1500, 2100, 4280], productivity: [5, 8, 12, 18.5] },
-            '2027': { adoption: [5000, 6200, 7500, 9000], productivity: [19, 21, 23, 26.5] },
-            '2028': { adoption: [10000, 11500, 13000, 15000], productivity: [28, 30, 32, 35.0] }
+
+        // 연도별 데이터 세트 정의
+        const simulationData = {
+            '2026': { farms: [1200, 1500, 2100, 4280], efficiency: [5, 8, 12, 18.5], total: "4,280", effVal: "18.5" },
+            '2027': { farms: [4500, 5800, 7200, 9500], efficiency: [19, 21, 23, 27.2], total: "9,500", effVal: "27.2" },
+            '2028': { farms: [10000, 12500, 14800, 18500], efficiency: [28, 31, 35, 42.8], total: "18,500", effVal: "42.8" }
         };
 
         function initCharts() {
@@ -224,8 +230,8 @@
                 data: {
                     labels: ['1Q','2Q','3Q','4Q'],
                     datasets: [
-                        { label: '보급 농가', data: dataSet['2026'].adoption, backgroundColor: c.blue, borderRadius: 5, yAxisID: 'y' },
-                        { label: '향상률(%)', data: dataSet['2026'].productivity, borderColor: c.emerald, type: 'line', tension: 0.4, yAxisID: 'y1' }
+                        { label: '보급 농가', data: simulationData['2026'].farms, backgroundColor: c.blue, borderRadius: 8, yAxisID: 'y' },
+                        { label: '사료 효율(%)', data: simulationData['2026'].efficiency, type: 'line', borderColor: c.emerald, tension: 0.4, yAxisID: 'y1' }
                     ]
                 },
                 options: { 
@@ -253,18 +259,23 @@
             }, 800);
         }
 
-        // 연도 버튼 클릭 시 데이터 업데이트 함수
+        // 연도별 데이터 업데이트 로직
         function updateChartData(year, btn) {
-            document.querySelectorAll('#year-buttons button').forEach(b => { 
-                b.className = "flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition-all"; 
+            // 버튼 스타일 초기화
+            document.querySelectorAll('.year-btn').forEach(b => {
+                b.classList.remove('bg-white', 'shadow', 'text-blue-600');
+                b.classList.add('text-slate-500');
             });
-            btn.className = "flex-1 lg:px-6 py-2 rounded-lg text-xs font-bold bg-white shadow text-blue-600 transition-all";
+            // 선택된 버튼 스타일 적용
+            btn.classList.remove('text-slate-500');
+            btn.classList.add('bg-white', 'shadow', 'text-blue-600');
+
+            // 수치 및 차트 업데이트
+            document.getElementById('stat-farms').innerText = simulationData[year].total;
+            document.getElementById('stat-efficiency').innerText = simulationData[year].effVal;
             
-            document.getElementById('stat-farms').innerText = dataSet[year].adoption[3].toLocaleString();
-            document.getElementById('stat-efficiency').innerText = dataSet[year].productivity[3];
-            
-            axChart.data.datasets[0].data = dataSet[year].adoption;
-            axChart.data.datasets[1].data = dataSet[year].productivity;
+            axChart.data.datasets[0].data = simulationData[year].farms;
+            axChart.data.datasets[1].data = simulationData[year].efficiency;
             axChart.update();
         }
 
@@ -276,6 +287,7 @@
             document.getElementById('ai-status-icon').className = "fa-solid fa-triangle-exclamation text-5xl text-red-500 mb-4 block";
             document.getElementById('ai-status-text').innerText = "주의 (Warning)";
             document.getElementById('ai-status-text').className = "text-2xl font-black text-red-500";
+            
             document.getElementById('ai-status-desc').innerText = "이상 고열 발생 감지!";
 
             setTimeout(() => {
@@ -285,6 +297,7 @@
                 document.getElementById('ai-status-icon').className = "fa-solid fa-shield-check text-5xl text-emerald-400 mb-4 block";
                 document.getElementById('ai-status-text').innerText = "정상 (Safe)";
                 document.getElementById('ai-status-text').className = "text-2xl font-black text-emerald-400";
+                
                 document.getElementById('ai-status-desc').innerText = "실시간 개체 이상 징후 확인";
             }, 5000);
         }
